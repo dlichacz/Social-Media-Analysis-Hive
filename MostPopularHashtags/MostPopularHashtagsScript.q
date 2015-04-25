@@ -20,10 +20,14 @@ OVERWRITE INTO TABLE tweet_data;
 DROP TABLE split_tweets;
 
 CREATE TABLE split_tweets AS
-SELECT id, ts, sptweetsFROM tweet_dataLATERAL VIEW EXPLODE(SPLIT(LOWER(tweet), '[ .,:~-­‐]')) WordTable as sptweets;
+SELECT id, ts, sptweets
+FROM tweet_data
+LATERAL VIEW EXPLODE(SPLIT(LOWER(tweet), '[ .,:~-­‐]')) WordTable as sptweets;
 
 -- Extract only hashtags from the previous table and create an ordered list of aggregate counts 
 
-SELECT REGEXP_EXTRACT(sptweets, '(#)[a-­‐z0-­‐9_](\\w+)', 0), COUNT(*) as htctFROM split_tweetsWHERE REGEXP_EXTRACT(sptweets, '(#)[a-­‐z0-­‐9_](\\w+)', 0) != '' 
+SELECT REGEXP_EXTRACT(sptweets, '(#)[a-­‐z0-­‐9_](\\w+)', 0), COUNT(*) as htct
+FROM split_tweets
+WHERE REGEXP_EXTRACT(sptweets, '(#)[a-­‐z0-­‐9_](\\w+)', 0) != '' 
 GROUP BY REGEXP_EXTRACT(sptweets, '(#)[a-­‐z0-­‐9_](\\w+)', 0) 
 ORDER BY htct descLIMIT 5;
